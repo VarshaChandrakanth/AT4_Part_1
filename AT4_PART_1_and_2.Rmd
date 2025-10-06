@@ -1,0 +1,249 @@
+---
+title: "Part-1"
+author: "Varsha"
+date: "2025-09-29"
+output: html_document
+---
+
+```{r }
+library("R.utils")
+
+URL="https://raw.githubusercontent.com/ghazkha/Assessment4/refs/heads/main/gene_expression.tsv"
+download.file(URL,destfile="gene_expression.tsv")
+list.files()
+
+exp <- read.delim("gene_expression.tsv")
+head(exp)
+
+rownames(exp) <- exp[,1]
+exp <- exp[,-1]
+exp$mean <-rowMeans(exp)
+
+sort <- exp[order(-exp$mean),]
+head(sort)
+
+low <- exp[which(exp$mean < 10),]
+print(low)
+
+hist(sort$mean, xlab ="Mean", ylab = "Frequency", main = "Mean Gene Expression")
+
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+library("R.utils")
+
+URL="https://raw.githubusercontent.com/ghazkha/Assessment4/refs/heads/main/growth_data.csv"
+download.file(URL,destfile="growth_data.csv")
+list.files()
+
+growth_data <- read.csv("growth_data.csv")
+head(growth_data)
+colnames(growth_data)
+
+northeast_data <- growth_data[grep("northeast", growth_data$Site), ]
+southwest_data <- growth_data[grep("southwest", growth_data$Site), ]
+
+northeast_Mean_before <- mean(northeast_data$Circumf_2005_cm)
+northeast_Mean_after <- mean(northeast_data$Circumf_2020_cm)
+southwest_Mean_before <- mean(southwest_data$Circumf_2005_cm)
+southwest_Mean_after <- mean(southwest_data$Circumf_2020_cm)
+
+northeast_SD_before <- sd(northeast_data$Circumf_2005_cm)
+northeast_SD_after <- sd(northeast_data$Circumf_2020_cm)
+southwest_SD_before <- sd(southwest_data$Circumf_2005_cm)
+southwest_SD_after <- sd(southwest_data$Circumf_2020_cm)
+
+boxplot(northeast_data$Circumf_2005_cm, northeast_data$Circumf_2020_cm,
+        ylab="Circumference",
+        main="Circumference in northeast ",
+        names = c("2005","2020"))
+
+boxplot(southwest_data$Circumf_2005_cm, southwest_data$Circumf_2020_cm,
+        ylab="Circumference",
+        main="Circumference in southwest ",
+        names = c("2005","2020"))
+
+
+northeast_data_difference <- northeast_data$Circumf_2020_cm - northeast_data$Circumf_2005_cm
+northeast_data_mean_difference <- mean(northeast_data_difference)
+
+southwest_data_difference <- southwest_data$Circumf_2020_cm - southwest_data$Circumf_2005_cm
+southwest_data_mean_difference <- mean(southwest_data_difference)
+
+t_test <- t.test(northeast_data_difference, southwest_data_difference)
+p_value <- t_test$p.value
+print(p_value)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+#PART 2
+
+```{r}
+library("R.utils")
+
+URL="http://ftp.ensemblgenomes.org/pub/bacteria/release-53/fasta/bacteria_0_collection/escherichia_coli_str_k_12_substr_mg1655_gca_000005845/cds/Escherichia_coli_str_k_12_substr_mg1655_gca_000005845.ASM584v2.cds.all.fa.gz"
+download.file(URL,destfile="ecoli_cds.fa.gz")
+gunzip("ecoli_cds.fa.gz")
+list.files()
+```
+
+```{r}
+library("R.utils")
+
+URL="https://ftp.ensemblgenomes.ebi.ac.uk/pub/bacteria/release-62/fasta/bacteria_51_collection/helicobacter_anseris_gca_003364335/cds/Helicobacter_anseris_gca_003364335.ASM336433v1.cds.all.fa.gz"
+download.file(URL,destfile="Helicobacter_anseris_gca_003364335.ASM336433v1.cds.all.fa.gz")
+gunzip("Helicobacter_anseris_gca_003364335.ASM336433v1.cds.all.fa.gz")
+list.files()
+
+library(seqinr)
+```
+
+```{r}
+cds_EC <- seqinr::read.fasta("ecoli_cds.fa")
+cds_HB <- seqinr::read.fasta("Helicobacter_anseris_gca_003364335.ASM336433v1.cds.all.fa")
+length(cds_EC)
+length(cds_HB)
+head(summary(cds_EC))
+head(summary(cds_HB))
+
+length_ecoli <- length(cds_EC)
+length_helicobacter <- length(cds_HB)
+
+dna_length <- data.frame(Organism = c("E. coli", "Helicobacter"),dna_length =c(length_ecoli, length_helicobacter))
+print(dna_length)
+```
+
+The total coding DNA sequence in E. coli and Cryobacterium was found to be 4239 and 3764 respectively.The E. coli contains 475 more genes than the Cryobacterium (12.6% higher in E. coli) indicating more complex coding capacity. 
+
+# 3. Calculate the length of all coding sequences in these two organisms. Make a boxplot of coding sequence length in these organisms. What is the mean and median coding sequence length of these two organisms? Describe any differences between the two organisms
+```{r}
+len_ecoli <- as.numeric(summary(cds_EC)[,1])
+len_helicobacter <- as.numeric(summary(cds_HB)[,1])
+
+sum(len_ecoli)
+mean(len_ecoli)
+median(len_ecoli)
+boxplot(len_ecoli,ylab="Sequence length (bp) for E. Coli")
+
+sum(len_helicobacter)
+mean(len_helicobacter)
+median(len_helicobacter)
+boxplot(len_helicobacter,ylab="Sequence length (bp) for Helicobacter")
+```
+
+The length of the coding sequence of E. coli: 3978528 bp
+The mean coding sequence length of E. coli: 938.5534 bp
+The median coding sequence length of E. coli: 831 bp
+ 
+The length of the coding sequence of Cryobacterium: 3471249 bp
+The mean coding sequence length of Cryobacterium: 922.2234 bp
+The median coding sequence length of Cryobacterium: 813 bp
+
+The boxplot was created for the coding sequence length of E. coli and Cryobacterium.
+
+
+# 4. Frequency of DNA bases in the total coding sequences for both organisms. Perform the same calculation for the total protein sequence. Bar plots for nucleotide and amino acid frequency.
+```{r}
+dna_composition_EC <- count(unlist(cds_EC),1)
+dna_composition_HB <- count(unlist(cds_HB),1)
+
+barplot(dna_composition_EC,xlab="nucleotides",ylab="frequency", main="E coli CDS composition")
+barplot(dna_composition_HB,xlab="nucleotides",ylab="frequency", main="Helicobacter CDS composition")
+
+prot_EC <- lapply(cds_EC, translate)
+prot_HB <- lapply(cds_HB, translate)
+
+aa <- unique(prot_EC[[2]])
+aa <- aa[aa != "*"]
+length(aa)
+
+prot_count_EC <- count(unlist(prot_EC),wordsize=1,alphabet=aa)
+prot_count_HB <- count(unlist(prot_HB),wordsize=1,alphabet=aa)
+
+barplot(prot_count_EC,xlab="amino acids",ylab="frequency", main="E coli amino acid composition")
+barplot(prot_count_HB,xlab="amino acids",ylab="frequency", main="Helicobacter amino acid composition")
+```
+
+The coding sequence of E. coli and Cryobacterium was unlisted. A barplot was created for know the cds composition of E. coli and Cryobacterium. Barplot analysis of nucleotide composition shows distinct profiles between the two species. E. coli showed maximum frequency for guanine and minimum frequency for thymine. Conversely, Cryobacterium showed maximum cytosine content and minimum adenine content. When these two species were compared to each other, it shows distinct variation in nucleotide compositions. 
+
+The amino acid composition was analysed using the barplot for both species.E. coli showed maximum frequency for leucine amino acid and minimum frequency for thymine. Conversely, Cryobacterium showed maximum alanine content and minimum cysteine content.
+
+# 5. Create a codon usage table and quantify the codon usage bias among all coding sequences. Describe any differences between the two organisms with respect to their codon usage bias. Provide charts to support your observations.
+```{r}
+codon_EC <- uco(unlist(cds_EC),index="rscu",as.data.frame=TRUE)
+
+sorted_EC <- codon_EC[order(codon_EC$RSCU),]
+top10codonsEC <- head(sorted_EC, 10)
+print(top10codonsEC)
+
+barplot(top10codonsEC$RSCU, names.arg = top10codonsEC$codon , xlab ="codons",
+        ylab ="RSCU",
+        main ="Codon usage bias for sorted E. coli")
+
+reverse_sorted_EC <- codon_EC[order(-codon_EC$RSCU),]
+top10reversecodonsEC <- head(reverse_sorted_EC, 10)
+print(top10reversecodonsEC)
+
+barplot(top10reversecodonsEC$RSCU, names.arg = top10reversecodonsEC$codon , xlab ="codons",
+        ylab ="RSCU",
+        main ="Codon usage bias for reverse sorted E. coli")
+
+codon_HB <- uco(unlist(cds_HB),index="rscu",as.data.frame=TRUE)
+
+sorted_HB <- codon_HB[order(codon_HB$RSCU),]
+top10codonsHB <- head(sorted_HB, 10)
+print(top10codonsHB)
+
+barplot(top10codonsHB$RSCU, names.arg = top10codonsHB$codon , xlab ="codons",
+        ylab ="RSCU",
+        main ="Codon usage bias for sorted Helicobacter")
+
+reverse_sorted_HB <- codon_HB[order(-codon_HB$RSCU),]
+top10reversecodonsHB <- head(reverse_sorted_HB, 10)
+print(top10reversecodonsHB)
+ 
+barplot(top10reversecodonsHB$RSCU, names.arg = top10reversecodonsHB$codon , xlab ="codons",
+        ylab ="RSCU",
+        main ="Codon usage bias for sorted Helicobacter")
+```
+
+The codon usage tables of E. coli and Cryobacterium with RSCU values were created. Barplots for each dataset were constructed. The highest and least frequency of top 10 codon usage bias for both the species were identified in each dataset. This highlights the codon preferences of codon usages for E. coli and Cryobacterium species.
+
+# 6. In the organism of interest, identify 10 protein sequence k-mers of length 3-5 which are the most over- and under-represented k-mers in your organism of interest. Are these k-mers also over- and under-represented in E. coli to a similar extent? Provide plots to support your observations. Why do you think these sequences are present at different levels in the genomes of these organisms
+```{r}
+prots_EC <- unlist(prot_EC)
+mycounts_EC <- count(prots_EC,wordsize=3,alphabet=aa)
+str(mycounts_EC)
+head(mycounts_EC)
+
+prots_HB <- unlist(prot_HB)
+mycounts_HB <- count(prots_HB,wordsize=3,alphabet=aa)
+str(mycounts_HB)
+head(mycounts_HB)
+
+freq_EC <- count(prots_EC,wordsize=3,alphabet=aa,freq=TRUE)
+freq_HB <- count(prots_HB,wordsize=3,alphabet=aa,freq=TRUE)
+
+head_freq_EC <- head(freq_EC, 10)
+head_freq_HB <- head(freq_HB, 10)
+
+barplot(head_freq_EC)
+barplot(head_freq_HB)
+```
+A bar plot representing the over- and under-represented k-mers was created after the protein sequence k-mers of length three were found.  AAL and AAI codons were the most over-represented and displayed the greatest frequency values in the observed dataset.  On the other hand, the k-mers with the lowest representation were the AAC and AAH codons.  For the codons AAA, AAD, AAE, AAF, AAG, and AAK, moderate presence was noted.  The major k-mers in the sequence are AAL and AAI, and the plot shows significant diversity in the codon frequency distribution overall.
